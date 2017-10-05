@@ -1,40 +1,69 @@
 console.log('BitcoinBot v1.0.0 starting up...');
 
-var twit = require('twit'); // This is the same as #include<package>
-var yahooFinance = require('yahoo-finance');
+var twit = require('twit');
+var request = require('request');
 
-var config = require('./config');
-var t = new twit(config);
-var btc = {
-	symbol: '^NYXBT',
-	modules:['price']
+{	// Variable Store
+	// Variables for Bitcoin Exchange Rate
+	var website;
+	var btc2usd;
+	// Variables for Twitter 
+	var config;
+	var t;
+	var tweet;
+	// Variables for Promise
 }
-var tweet = {
-	status: ''
+
+initialize();
+postTweet();
+setInterval(postTweet, 1000*30); // Post every 20 seconds
+
+function initialize() {
+	// Initialize Bitcoin Exchange Values
+	website = {
+		url: 'https://blockchain.info/ticker',
+		json: true
+	};
+	// Initialize Twitter Values
+	config = require('./config');
+	t = new twit(config);
+	tweet = {
+		status: ''
+	};
+	// Initialize Promise Values
 }
-
-/* Loop (Everyday at 4pm) {
-	yahooFinance.quote(btc, stockData);
-	t.post('statuses/update', tweet, tweeted);
-
-}
-*/
-
 
 function postTweet() {
-	yahooFinance.quote(btc, stockData); // update stock price & tweet text
-	t.post('statuses/update', tweet, tweeted); // post tweet
-}
+	var promise = new Promise(function(resolve, reject) {
+		if (reject) {
+			console.log(reject);
+		} else if (resolve) {
+			console.log("Something went right");
+		} else {
+			console.log("Something went ???");
+		}
+	});
 
-function stockData(err, quotes) {
-	tweet.status = 'Current Rate: ' + quotes.price.regularMarketPrice + ' USD = 1 BTC';
-}
+	promise.then(t.post('statuses/update', tweet, tweeted));
 
+	
 
-function tweeted(err, data, response) {
-	if (err) {
-		console.log("Something went wrong!");
-	} else {
-		console.log("Success!");
+	function tweeted(err, response, data) {
+		if (err) {
+			console.log(err);
+		} else {
+			console.log("\tPosted to Twitter");
+		}
 	}
+}
+
+function calculateExchange() {
+	request(website, function(err, response, data) {
+		if (err) {
+			console.log("Something went wrong when calculating exchange rate.");
+		} else {
+			tweet.status = 'Current Rate: ' + data.USD["15m"] + ' USD = 1 BTC';
+			console.log(tweet.status);
+		}
+	});
 }
