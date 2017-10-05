@@ -24,6 +24,10 @@ function initialize() {
 		url: 'https://blockchain.info/ticker',
 		json: true
 	};
+	btc2usd = {
+		old: 0,
+		new: 0
+	};
 	// Initialize Twitter Values
 	config = require('./config');
 	t = new twit(config);
@@ -34,19 +38,11 @@ function initialize() {
 }
 
 function postTweet() {
-	var promise = new Promise(function(resolve, reject) {
-		if (reject) {
-			console.log(reject);
-		} else if (resolve) {
-			console.log("Something went right");
-		} else {
-			console.log("Something went ???");
+	calculateExchange().then(function(result) {	
+		if (btc2usd.old != btc2usd.new) {
+			t.post('statuses/update', tweet, tweeted);
 		}
-	});
-
-	promise.then(t.post('statuses/update', tweet, tweeted));
-
-	
+	})
 
 	function tweeted(err, response, data) {
 		if (err) {
@@ -57,13 +53,27 @@ function postTweet() {
 	}
 }
 
+
+
+
 function calculateExchange() {
-	request(website, function(err, response, data) {
-		if (err) {
-			console.log("Something went wrong when calculating exchange rate.");
-		} else {
-			tweet.status = 'Current Rate: ' + data.USD["15m"] + ' USD = 1 BTC';
-			console.log(tweet.status);
-		}
-	});
+	return new Promise(function(resolve, reject) {
+		request(website, function(err, response, data) {
+			if (err) {
+				reject('Error getting data from server.');
+			} else {
+				btc2usd.old = btc2usd.new;
+				btc2usd.new = data.USD["15m"];
+				if (btc2usd.old < btc2usd.new) {
+					tweet.status = 'This just in: Bitcoin is rising!\nCurrent Rate: ' + btc2usd.new + ' USD = 1 BTC';
+				} else if (btc2usd.old > btc2usd.new) {
+					tweet.status = 'Bad news: Bitcoin on the decline.\nCurrent Rate: ' + btc2usd.new + ' USD = 1 BTC';
+				} else {
+					tweet.status = ''
+				}
+				console.log(tweet.status);
+				resolve();
+			}
+		});
+	})
 }
