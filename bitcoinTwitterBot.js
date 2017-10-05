@@ -72,57 +72,37 @@ function postTweet(type) {
 
 // This calculates the BTC to USD exchange rate. Returns a promise (will finish before allowing a .then to happen)
 function calculateExchange(type) {
-	if (type === 'hourly') {
-		return new Promise(function(resolve, reject) {
-			request(website, function(err, response, data) {
-				if (err) {
-					reject('Error getting data from server.');
-				} else {
-					btc2usd.old = btc2usd.new;
-					btc2usd.new = data.USD["15m"];
-					if (type === 'daily') {
-						var change = (btc2usd.new - btc2usd.yesterday)/(btc2usd.yesterday);
-						btc2usd.yesterday = btc2usd.new;
-						if (change < 0) {
-							tweet.status = 'Bad News: Since Yesterday, Bitcoin has dropped by ' + (0-change) + '%.\n';
-						} else if (change > 0) {
-							tweet.status = 'Good News: Since Yesterday, Bitcoin has increased by ' + change + '%.\n';
-						} else {
-							tweet.status = 'Bitcoin has the same value today as it did yesterday.\n';
-						}
-					} else if (type === 'hourly') {
-						if (btc2usd.old < btc2usd.new) {
-							tweet.status = 'This just in: Bitcoin is rising!\n';
-						} else if (btc2usd.old > btc2usd.new) {
-							tweet.status = 'Bad news: Bitcoin on the decline.\n';
-						} else {
-							tweet.status = 'Looks like we\'re stable.\n';
-						}
-					}
-
-					tweet.status += 'Current Rate: ' + btc2usd.new + ' USD = 1 BTC';
-					console.log(tweet.status);
-					resolve();
-				}
-			});
-		})
-	} else if (type === 'daily') {
-		return new Promise(function(resolve, reject) {
-			request(website, function(err, response, data) {
-				if (err) {
-					reject('Error getting data from server.');
-				} else {
-					btc2usd.old = btc2usd.new;		 // update old value as normal
-					btc2usd.new = data.USD["15m"];	 // update new value as normal
+	return new Promise(function(resolve, reject) {
+		request(website, function(err, response, data) {
+			if (err) {
+				reject('Error getting data from server.');
+			} else {
+				btc2usd.old = btc2usd.new;
+				btc2usd.new = data.USD["15m"];
+				if (type === 'daily') {
 					var change = (btc2usd.new - btc2usd.yesterday)/(btc2usd.yesterday);
-					btc2usd.yesterday = btc2usd.new; // update daily compare value
+					btc2usd.yesterday = btc2usd.new;
 					if (change < 0) {
-						tweet.status = 'Bad News: Since Yesterday, Bitcoin has dropped by ' + (0-change) + '%.\nCurrent Rate: ' + btc2usd.new + ' USD = 1 BTC';
+						tweet.status = 'Bad News: Since Yesterday, Bitcoin has dropped by ' + (0-change) + '%.\n';
 					} else if (change > 0) {
-						tweet.status = 'Good News: Since Yesterday, Bitcoin has increased by ' + change + '%.\nCurrent Rate: ' + btc2usd.new + 'USD = 1 BTC';
+						tweet.status = 'Good News: Since Yesterday, Bitcoin has increased by ' + change + '%.\n';
+					} else {
+						tweet.status = 'Bitcoin has the same value today as it did yesterday.\n';
+					}
+				} else if (type === 'hourly') {
+					if (btc2usd.old < btc2usd.new) {
+						tweet.status = 'This just in: Bitcoin is rising!\n';
+					} else if (btc2usd.old > btc2usd.new) {
+						tweet.status = 'Bad news: Bitcoin on the decline.\n';
+					} else {
+						tweet.status = 'Looks like we\'re stable.\n';
 					}
 				}
-			})
-		})
-	}
+
+				tweet.status += 'Current Rate: ' + btc2usd.new + ' USD = 1 BTC';
+				console.log(tweet.status);
+				resolve();
+			}
+		});
+	})
 }
