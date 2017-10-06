@@ -44,12 +44,20 @@ function initialize() {
 
 function start() {
 	// Post a tweet every hour
-	hourlyPost = scheduler.scheduleJob('0 0-11,13-23 * * *', postTweet('hourly'));
-	dailyPost  = scheduler.scheduleJob('0 12 * * *', postTweet('daily'));
+	hourlyPost = scheduler.scheduleJob('0 0-11,13-23 * * *', postTweetHourly);
+	dailyPost  = scheduler.scheduleJob('0 12 * * *', postTweetDaily);
 	//surprisePost = setInterval(postTweet('mystery'), 1000*60*5);
 	console.log('scheduled');
 	
 	//setInterval(postTweet,1000*30); // Then post every (30) seconds
+}
+
+function postTweetHourly() {
+	postTweet('hourly');
+}
+
+function postTweetDaily() {
+	postTweet('daily');
 }
 
 function postTweet(type) {
