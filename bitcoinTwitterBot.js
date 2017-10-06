@@ -79,7 +79,7 @@ function calculateExchange(type) {
 			if (err) {
 				reject('Error getting data from server.');
 			} else {
-				twitter.status = '';
+				tweet.status = '';
 				btc2usd.old = btc2usd.new;
 				btc2usd.new = data.USD["15m"];
 				if (type === 'daily') {
