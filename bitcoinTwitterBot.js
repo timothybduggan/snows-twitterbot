@@ -59,6 +59,8 @@ function postTweet(type) {
 			t.post('statuses/update', tweet, tweeted);
 			//console.log('  Would have Posted');
 		}
+	}, function(result) {
+		console.log(result);
 	})
 
 	function tweeted(err, response, data) {
@@ -77,6 +79,7 @@ function calculateExchange(type) {
 			if (err) {
 				reject('Error getting data from server.');
 			} else {
+				twitter.status = '';
 				btc2usd.old = btc2usd.new;
 				btc2usd.new = data.USD["15m"];
 				if (type === 'daily') {
